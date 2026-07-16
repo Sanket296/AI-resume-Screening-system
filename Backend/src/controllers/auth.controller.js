@@ -1,7 +1,16 @@
+const path = require("path")
 const userModel = require("../models/user.model")
 const bcrypt = require("bcryptjs")
 const jwt = require("jsonwebtoken")
 const tokenBlacklistModel = require("../models/blacklist.model")
+
+require("dotenv").config({ path: path.resolve(__dirname, "..", "..", ".env") })
+
+const jwtSecret = process.env.JWT_SECRET?.trim() || "dev-jwt-secret-change-me"
+
+if (!process.env.JWT_SECRET?.trim()) {
+    console.warn("JWT_SECRET is not set. Using a temporary development secret.")
+}
 
 /**
  * @name registerUserController
@@ -38,7 +47,7 @@ async function registerUserController(req, res) {
 
     const token = jwt.sign(
         { id: user._id, username: user.username },
-        process.env.JWT_SECRET,
+        jwtSecret,
         { expiresIn: "1d" }
     )
 
@@ -84,7 +93,7 @@ async function loginUserController(req, res) {
 
     const token = jwt.sign(
         { id: user._id, username: user.username },
-        process.env.JWT_SECRET,
+        jwtSecret,
         { expiresIn: "1d" }
     )
 
