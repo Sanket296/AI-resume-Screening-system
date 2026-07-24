@@ -1,5 +1,4 @@
-import axios from "axios"
-
+import axios from "axios";
 
 const api = axios.create({
     baseURL: "http://localhost:3000",
@@ -60,7 +59,11 @@ export async function getMe() {
         return response.data
 
     } catch (err) {
-        console.log(err)
+        if (err.response?.status === 401) {
+      return null // not logged in — normal, not an error
+    }
+    console.log(err) // only log real/unexpected errors
+    return null
     }
 
 }
