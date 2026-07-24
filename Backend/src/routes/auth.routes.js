@@ -9,7 +9,7 @@ const authRouter = Router()
  * @description Register a new user
  * @access Public
  */
-authRouter.post("/register", authController.registerUserC ontroller)
+authRouter.post("/register", authController.registerUserController)
 
 
 /**
