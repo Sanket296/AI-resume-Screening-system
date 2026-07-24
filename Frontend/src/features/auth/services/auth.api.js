@@ -2,7 +2,7 @@ import axios from "axios"
 
 
 const api = axios.create({
-    baseURL: "http://localhost:3000",
+    baseURL: "https://ai-resume-screening-system-86sw.vercel.app/",
     withCredentials: true
 })
 
