@@ -4,12 +4,12 @@ const authMiddleware = require("../middlewares/auth.middleware")
 
 const authRouter = Router()
 
-/**
+/** this is called js comment string(jsdoc comments)
  * @route POST /api/auth/register
  * @description Register a new user
  * @access Public
  */
-authRouter.post("/register", authController.registerUserController)
+authRouter.post("/register", authController.registerUserC ontroller)
 
 
 /**
