@@ -1,15 +1,18 @@
 import React, { useState, useRef } from 'react'
 import "../style/home.scss"
+import { useAuth } from '../../auth/hooks/useAuth'
 import { useInterview } from '../hooks/useInterview.js'
 import { useNavigate } from 'react-router'
 
 const Home = () => {
 
-    const { loading, generateReport,reports } = useInterview()
+    const { loading, generateReport, reports, getReports, deleteReport, updateReportTitle } = useInterview()
+    const { handleLogout, user } = useAuth()
     const [ jobDescription, setJobDescription ] = useState("")
     const [ selfDescription, setSelfDescription ] = useState("")
     const [ resumeFile, setResumeFile ] = useState(null)
     const [ resumeFileName, setResumeFileName ] = useState("")
+    const [ editingTitles, setEditingTitles ] = useState({})
     const resumeInputRef = useRef()
 
     const navigate = useNavigate()
@@ -42,6 +45,45 @@ const Home = () => {
         }
     }
 
+    const handleLogoutAndRedirect = async () => {
+        await handleLogout()
+        navigate('/register')
+    }
+
+    const handleStartEditTitle = (report) => {
+        setEditingTitles(prev => ({ ...prev, [report._id]: report.title || '' }))
+    }
+
+    const handleTitleChange = (reportId, value) => {
+        setEditingTitles(prev => ({ ...prev, [reportId]: value }))
+    }
+
+    const handleCancelEdit = (reportId) => {
+        setEditingTitles(prev => {
+            const updated = { ...prev }
+            delete updated[reportId]
+            return updated
+        })
+    }
+
+    const handleSaveTitle = async (reportId) => {
+        const newTitle = editingTitles[reportId]?.trim()
+        if (!newTitle) {
+            alert('Please enter a title before saving.')
+            return
+        }
+
+        await updateReportTitle(reportId, newTitle)
+        await getReports()
+        handleCancelEdit(reportId)
+    }
+
+    const handleDeleteReport = async (reportId) => {
+        if (!window.confirm('Delete this report from history?')) return
+        await deleteReport(reportId)
+        await getReports()
+    }
+
     if (loading) {
         return (
             <main className='loading-screen'>
@@ -52,6 +94,14 @@ const Home = () => {
 
     return (
         <div className='home-page'>
+            <div className='page-topbar'>
+                <div className='page-topbar__welcome'>
+                    <p>Welcome back, {user?.username || 'candidate'}. Ready to build another winning interview plan?</p>
+                </div>
+                <button className='button secondary-button page-topbar__logout' onClick={handleLogoutAndRedirect}>
+                    Logout
+                </button>
+            </div>
 
             {/* Page Header */}
             <header className='page-header'>
@@ -149,7 +199,7 @@ const Home = () => {
             </div>
 
             {/* Recent Reports List */}
-            {reports.length > 0 && (
+            {/* {reports.length > 0 && (
                 <section className='recent-reports'>
                     <h2>My Recent Interview Plans</h2>
                     <ul className='reports-list'>
@@ -162,7 +212,60 @@ const Home = () => {
                         ))}
                     </ul>
                 </section>
-            )}
+            )} */}
+
+            <section className='history-section'>
+                <div className='history-header'>
+                    <div>
+                        <h2>History</h2>
+                        <p>Review past interview plans, rename a history title for your convenience, or remove reports you no longer need.</p>
+                    </div>
+                </div>
+
+                {reports.length === 0 ? (
+                    <div className='history-empty'>
+                        <p>No interview history yet. Your generated plans will appear here for quick review.</p>
+                    </div>
+                ) : (
+                    <ul className='history-list'>
+                        {reports.map(report => {
+                            const isEditing = editingTitles[report._id] !== undefined
+                            return (
+                                <li key={report._id} className='history-item' onClick={() => !isEditing && navigate(`/interview/${report._id}`)}>
+                                    <div className='history-item__main'>
+                                        {isEditing ? (
+                                            <input
+                                                value={editingTitles[report._id]}
+                                                onChange={(e) => handleTitleChange(report._id, e.target.value)}
+                                                className='history-item__input'
+                                                placeholder='Enter a new title for this history item'
+                                                onClick={(e) => e.stopPropagation()}
+                                            />
+                                        ) : (
+                                            <h3>{report.title || 'Untitled Position'}</h3>
+                                        )}
+                                        <p className='report-meta'>Generated on {new Date(report.createdAt).toLocaleDateString()}</p>
+                                        <p className={`match-score ${report.matchScore >= 80 ? 'score--high' : report.matchScore >= 60 ? 'score--mid' : 'score--low'}`}>Match Score: {report.matchScore}%</p>
+                                    </div>
+                                    <div className='history-item__actions'>
+                                        {isEditing ? (
+                                            <>
+                                                <button className='button secondary-button' onClick={(e) => { e.stopPropagation(); handleCancelEdit(report._id) }}>Cancel</button>
+                                                <button className='button primary-button' onClick={(e) => { e.stopPropagation(); handleSaveTitle(report._id) }}>Save</button>
+                                            </>
+                                        ) : (
+                                            <>
+                                                <button className='button secondary-button' onClick={(e) => { e.stopPropagation(); handleStartEditTitle(report) }}>Edit title</button>
+                                                <button className='button danger-button' onClick={(e) => { e.stopPropagation(); handleDeleteReport(report._id) }}>Delete</button>
+                                            </>
+                                        )}
+                                    </div>
+                                </li>
+                            )
+                        })}
+                    </ul>
+                )}
+            </section>
 
             {/* Page Footer */}
             <footer className='page-footer'>

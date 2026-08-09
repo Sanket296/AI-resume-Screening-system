@@ -61,6 +61,7 @@ const Interview = () => {
     const [ activeNav, setActiveNav ] = useState('technical')
     const { report, getReportById, loading, getResumePdf } = useInterview()
     const { interviewId } = useParams()
+    const navigate = useNavigate()
 
     useEffect(() => {
         if (interviewId) {
@@ -85,8 +86,10 @@ const Interview = () => {
 
     return (
         <div className='interview-page'>
+            <div className='interview-panel-header'>
+                <button className='button secondary-button exit-button' onClick={() => navigate('/')}>Exit</button>
+            </div>
             <div className='interview-layout'>
-
                 {/* ── Left Nav ── */}
                 <nav className='interview-nav'>
                     <div className="nav-content">

@@ -14,6 +14,18 @@
         color: white;
     }
 
+    &.secondary-button{
+        background-color: transparent;
+        border: 1px solid #e1034d;
+        color: #e1034d;
+    }
+
+    &.danger-button{
+        background-color: rgba(225, 16, 77, 0.12);
+        color: #ff6b9d;
+        border: 1px solid rgba(225, 16, 77, 0.35);
+    }
+
     &:active{
         transform: scale(0.9);
     }
